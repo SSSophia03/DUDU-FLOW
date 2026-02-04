@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dudu Flow - 极致心流专线 (Interview Pro Version)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #020617;
+      --accent-blue: #3b82f6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+    }
+    body {
+      background: var(--bg);
+      color: white;
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    /* 核心光球：增加流体感 */
+    .orb {
+      filter: blur(40px);
+      transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+      mix-blend-mode: screen;
+    }
+    .breathing { animation: breathe 6s infinite ease-in-out; }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+    /* 异常日志动画 */
+    .log-entry { animation: slideLeft 0.3s ease-out; }
+    @keyframes slideLeft {
+      from { transform: translateX(50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      cursor: pointer;
+      box-shadow: 0 0 15px var(--accent-emerald);
+    }
+  </style>
+</head>
+<body class="flex justify-center items-center min-h-screen">
+
+  <div class="relative w-[375px] h-[812px] bg-slate-950 rounded-[50px] border-[8px] border-slate-800 shadow-2xl overflow-hidden">
+    
+    <div class="absolute top-0 w-full px-8 py-4 flex justify-between text-[11px] z-50">
+        <span>9:41</span>
+        <div class="flex gap-2">
+            <span id="gps-indicator">📡 GPS: High</span>
+            <span>📶</span>
+            <span>🔋</span>
+        </div>
+    </div>
+
+    <div class="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-full z-50"></div>
+
+    <div id="app-container" class="h-full relative">
+
+      <section id="view-gateway" class="h-full p-6 flex flex-col pt-16">
+        <h1 class="text-2xl font-light mb-2">Dudu Flow</h1>
+        <p class="text-xs text-slate-400 mb-8 uppercase tracking-[2px]">让路况成为你的补觉红利</p>
+
+        <div class="space-y-4 mb-8">
+            <div onclick="selectVibe('deep-diver')" id="card-deep" class="glass-effect rounded-3xl p-5 cursor-pointer border-transparent transition-all">
+                <div class="flex justify-between items-start mb-2">
+                    <i class="fas fa-moon text-blue-400"></i>
+                    <span class="text-[10px] bg-blue-500/20 px-2 py-1 rounded">噪音 < 40dB</span>
+                </div>
+                <h3 class="font-medium text-blue-100">深潜者 (Deep Diver)</h3>
+                <p class="text-[11px] text-slate-400 mt-1">全静音协议 · 暗光环境 · 独立胶囊位</p>
+            </div>
+
+            <div onclick="selectVibe('flow-master')" id="card-flow" class="glass-effect rounded-3xl p-5 cursor-pointer border-transparent transition-all">
+                <div class="flex justify-between items-start mb-2">
+                    <i class="fas fa-brain text-emerald-400"></i>
+                    <span class="text-[10px] bg-emerald-500/20 px-2 py-1 rounded">5G聚合网络</span>
+                </div>
+                <h3 class="font-medium text-emerald-100">心流者 (Flow Master)</h3>
+                <p class="text-[11px] text-slate-400 mt-1">同频办公区 · AIGC 白噪音 · 专注模式</p>
+            </div>
+        </div>
+
+        <div class="mt-auto space-y-4">
+            <div class="flex justify-between text-xs text-slate-400 px-2">
+                <span>科技园站</span>
+                <span>约 45 分钟行程</span>
+                <span>滨海大道</span>
+            </div>
+            <button id="btn-book" disabled onclick="transitionToFlow()" class="w-full bg-white text-black py-4 rounded-2xl font-semibold opacity-50 transition-all">
+                开启静谧时刻 (¥18.5)
+            </button>
+        </div>
+      </section>
+
+      <section id="view-in-ride" class="hidden h-full flex flex-col p-6 pt-16 bg-slate-950">
+        
+        <div id="guard-mode" class="flex items-center gap-2 bg-slate-900/50 rounded-full px-3 py-1.5 w-fit mb-4 border border-slate-800">
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span class="text-[10px] text-slate-300 uppercase tracking-tighter">Guard Mode: 惯性导航就绪</span>
+        </div>
+
+        <div class="flex-1 flex flex-col justify-center items-center relative">
+            <div id="main-orb" class="orb breathing w-40 h-40 rounded-full bg-blue-600"></div>
+            <div class="absolute text-center">
+                <p id="orb-timer" class="text-4xl font-extralight tracking-tighter">35:00</p>
+                <p id="orb-status" class="text-[10px] text-slate-400 mt-2 uppercase">预计补觉时长</p>
+            </div>
+            
+            <div id="bonus-alert" class="hidden absolute top-1/4 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-xl text-center">
+                <p class="text-[10px] text-emerald-400 font-medium">TRAFFIC BONUS</p>
+                <p class="text-xs text-emerald-200">+15 分钟深度睡眠</p>
+            </div>
+        </div>
+
+        <div class="glass-effect rounded-2xl p-4 mb-8">
+            <div class="flex justify-between text-[10px] mb-2 text-slate-400">
+                <span>AIGC Soundscape: 时间压缩模式</span>
+                <span id="audio-bpm">60 BPM</span>
+            </div>
+            <div class="h-[2px] w-full bg-slate-800 rounded-full overflow-hidden">
+                <div id="audio-progress" class="h-full bg-emerald-500 w-1/3 transition-all duration-1000"></div>
+            </div>
+        </div>
+
+        <div id="setup-controls" class="space-y-6">
+            <div class="space-y-4">
+                <div class="flex justify-between text-[11px]">
+                    <span class="text-slate-400">唤醒缓冲 (Buffer)</span>
+                    <span id="buffer-val" class="text-emerald-400">10 分钟</span>
+                </div>
+                <input type="range" id="buffer-slider" min="5" max="25" value="10" class="w-full accent-emerald-500 opacity-50">
+            </div>
+            <button onclick="enterDeepFlow()" class="w-full bg-emerald-600 py-4 rounded-2xl font-medium">进入心流状态</button>
+        </div>
+
+        <div class="flex gap-2 mt-4 opacity-30 hover:opacity-100 transition-opacity">
+            <button onclick="triggerJam()" class="text-[9px] border border-slate-700 px-2 py-1 rounded">模拟拥堵</button>
+            <button onclick="triggerDrift()" class="text-[9px] border border-slate-700 px-2 py-1 rounded">模拟漂移</button>
+            <button onclick="triggerWake()" class="text-[9px] border border-slate-700 px-2 py-1 rounded">唤醒程序</button>
+        </div>
+      </section>
+
+      <section id="view-report" class="hidden h-full p-8 flex flex-col justify-center text-center">
+        <div class="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-check text-emerald-500 text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-light mb-8">软着陆成功</h2>
+        
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="glass-effect rounded-2xl p-4">
+                <p class="text-[10px] text-slate-400 mb-1">心流占比</p>
+                <p class="text-lg font-medium text-emerald-400">88.5%</p>
+            </div>
+            <div class="glass-effect rounded-2xl p-4">
+                <p class="text-[10px] text-slate-400 mb-1">唤醒误差</p>
+                <p class="text-lg font-medium text-blue-400">+1.2s</p>
+            </div>
+        </div>
+
+        <button onclick="location.reload()" class="w-full border border-slate-700 py-4 rounded-2xl text-xs text-slate-400">返回首页</button>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    let currentVibe = null;
+
+    function selectVibe(vibe) {
+        currentVibe = vibe;
+        document.getElementById('card-deep').style.borderColor = vibe === 'deep-diver' ? '#3b82f6' : 'transparent';
+        document.getElementById('card-flow').style.borderColor = vibe === 'flow-master' ? '#10b981' : 'transparent';
+        const btn = document.getElementById('btn-book');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+
+    function transitionToFlow() {
+        document.getElementById('view-gateway').classList.add('hidden');
+        document.getElementById('view-in-ride').classList.remove('hidden');
+        const orb = document.getElementById('main-orb');
+        orb.style.backgroundColor = currentVibe === 'deep-diver' ? '#1d4ed8' : '#059669';
+    }
+
+    function enterDeepFlow() {
+        document.getElementById('setup-controls').style.opacity = '0.2';
+        document.getElementById('setup-controls').style.pointerEvents = 'none';
+        document.getElementById('orb-status').innerText = 'Geo-Wake 已就绪';
+    }
+
+    // PM 核心功能：模拟拥堵 (PRD 3.2.2) [cite: 46]
+    function triggerJam() {
+        document.getElementById('bonus-alert').classList.remove('hidden');
+        document.getElementById('orb-timer').innerText = "52:00";
+        document.getElementById('orb-timer').style.color = "#34d399";
+        const orb = document.getElementById('main-orb');
+        orb.style.transform = "scale(1.4)";
+        orb.style.filter = "blur(60px)";
+    }
+
+    // PM 核心功能：模拟路线漂移 (PRD 4.0) 
+    function triggerDrift() {
+        const gps = document.getElementById('gps-indicator');
+        gps.innerText = "⚠️ GPS Low";
+        gps.style.color = "#f87171";
+        const guard = document.getElementById('guard-mode');
+        guard.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-red-500"></div><span class="text-[10px] text-red-400 uppercase">惯性推演模式：E-002 触发</span>`;
+    }
+
+    function triggerWake() {
+        const orb = document.getElementById('main-orb');
+        orb.style.backgroundColor = "#f59e0b";
+        orb.style.transform = "scale(1.1)";
+        orb.style.filter = "blur(20px)";
+        document.getElementById('orb-timer').innerText = "00:00";
+        document.getElementById('orb-timer').style.color = "white";
+        document.getElementById('orb-status').innerText = "日出唤醒中...";
+        
+        setTimeout(() => {
+            document.getElementById('view-in-ride').classList.add('hidden');
+            document.getElementById('view-report').classList.remove('hidden');
+        }, 3000);
+    }
+
+    // 监听滑块
+    document.getElementById('buffer-slider').addEventListener('input', (e) => {
+        document.getElementById('buffer-val').innerText = e.target.value + " 分钟";
+        document.getElementById('orb-timer').innerText = (45 - e.target.value) + ":00";
+    });
+  </script>
+</body>
+</html>
